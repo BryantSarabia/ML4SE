@@ -1,0 +1,183 @@
+\documentclass[conference]{IEEEtran}
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{booktabs}
+
+\begin{document}
+
+\title{Toxic Comment Classification Using Machine Learning and Deep Learning Approaches}
+
+\author{
+\IEEEauthorblockN{Student Name}
+\IEEEauthorblockA{\textit{ML4SE Course} \\
+\textit{University}\\
+Email: student@university.edu}
+}
+
+\maketitle
+
+\begin{abstract}
+This paper presents a comprehensive approach to toxic comment classification using both traditional machine learning and deep learning techniques. We implement and compare multiple models including TF-IDF with Logistic Regression, Naive Bayes, and a Bidirectional LSTM neural network for multi-label classification of Wikipedia comments across six toxicity categories: toxic, severe\_toxic, obscene, threat, insult, and identity\_hate. Our experimental evaluation employs 10-fold cross-validation and multiple performance metrics to assess model effectiveness on the highly imbalanced Jigsaw dataset. Results demonstrate the comparative strengths of different approaches, with the BiLSTM model achieving competitive performance while the classical ML baselines provide interpretable and efficient alternatives.
+\end{abstract}
+
+\begin{IEEEkeywords}
+toxic comment classification, multi-label classification, natural language processing, deep learning, LSTM, text classification
+\end{IEEEkeywords}
+
+\section{Introduction}
+
+The proliferation of online communication platforms has led to an increase in toxic and harmful content. Identifying and moderating such content is crucial for maintaining healthy online communities. This project addresses the challenge of automatically detecting toxic comments using machine learning approaches.
+
+The Conversation AI team, a research initiative founded by Jigsaw and Google, developed the Perspective API to help identify toxic comments. This work builds upon their efforts by implementing and comparing various classification techniques on the Jigsaw Toxic Comment Classification Challenge dataset.
+
+This paper is organized as follows: Section \ref{sec:dataset} describes the dataset and preprocessing methodology, Section \ref{sec:methods} presents the machine learning techniques employed, Section \ref{sec:validation} explains the cross-validation approach, Section \ref{sec:results} discusses the experimental results, and Section \ref{sec:conclusion} concludes the work.
+
+\section{Dataset Description}
+\label{sec:dataset}
+
+\subsection{Multi-Label Classification}
+
+Multi-label classification differs from traditional single-label problems in that each instance can belong to multiple classes simultaneously. In our case, a comment can exhibit multiple types of toxicity. For example, a comment might be both \textit{toxic} and \textit{insult}, or \textit{obscene}, \textit{insult}, and \textit{identity\_hate} at the same time.
+
+Formally, given an instance $x$ and a set of labels $L = \{l_1, l_2, ..., l_k\}$, a multi-label classifier learns a function $h: X \rightarrow 2^L$ that maps instances to subsets of labels.
+
+\subsection{Dataset Analysis}
+
+The dataset consists of Wikipedia comments labeled by human raters for toxic behavior across six categories:
+
+\begin{itemize}
+    \item \textbf{toxic}: Comments displaying negativity or hostility
+    \item \textbf{severe\_toxic}: Highly aggressive or harmful content
+    \item \textbf{obscene}: Offensive or vulgar language
+    \item \textbf{threat}: Explicit threats or intentions of harm
+    \item \textbf{insult}: Disrespectful or demeaning language
+    \item \textbf{identity\_hate}: Discrimination based on identity factors
+\end{itemize}
+
+The training set contains 159,571 comments with binary labels for each category. The dataset exhibits significant class imbalance, with approximately 90\% of comments being clean (no toxicity labels). Among the toxic categories, \textit{threat} is the rarest (0.30\%) while \textit{toxic} is most common (9.58\%).
+
+% Table will be added after analysis
+
+\subsection{Preprocessing}
+
+Text preprocessing is critical for NLP tasks. Our pipeline includes:
+
+\begin{enumerate}
+    \item Lowercasing all text
+    \item Expanding contractions (e.g., "can't" $\rightarrow$ "cannot")
+    \item Removing non-alphabetic characters
+    \item Tokenization
+    \item Lemmatization using spaCy
+    \item Removing stopwords
+\end{enumerate}
+
+\section{Machine Learning Techniques}
+\label{sec:methods}
+
+We implement three distinct approaches to compare classical machine learning with modern deep learning.
+
+\subsection{Baseline Models}
+
+\subsubsection{TF-IDF + Logistic Regression}
+
+Term Frequency-Inverse Document Frequency (TF-IDF) converts text to numerical features by weighting terms based on their frequency and uniqueness. We use:
+
+\begin{equation}
+\text{TF-IDF}(t,d) = \text{TF}(t,d) \times \text{IDF}(t)
+\end{equation}
+
+where $\text{IDF}(t) = \log\frac{N}{|\{d \in D: t \in d\}|}$.
+
+Logistic regression with sigmoid activation provides probabilistic predictions for each label independently, suitable for multi-label classification with the one-vs-rest strategy.
+
+\subsubsection{TF-IDF + Naive Bayes}
+
+Multinomial Naive Bayes assumes feature independence and uses Bayes' theorem:
+
+\begin{equation}
+P(y|x) = \frac{P(x|y)P(y)}{P(x)}
+\end{equation}
+
+This model is particularly effective for text classification and handles class imbalance well with appropriate priors.
+
+\subsection{Deep Learning Model}
+
+\subsubsection{Bidirectional LSTM Architecture}
+
+Our neural network architecture consists of:
+
+\begin{enumerate}
+    \item \textbf{Embedding Layer}: Maps vocabulary indices to dense vectors (dimension 32)
+    \item \textbf{Bidirectional LSTM}: Processes sequences in both directions (32 units)
+    \item \textbf{Dense Layers}: Two fully-connected layers (64 units, ReLU activation)
+    \item \textbf{Output Layer}: Six units with sigmoid activation for multi-label prediction
+\end{enumerate}
+
+The model is trained with binary cross-entropy loss:
+
+\begin{equation}
+\mathcal{L} = -\frac{1}{N}\sum_{i=1}^{N}\sum_{j=1}^{6}[y_{ij}\log(\hat{y}_{ij}) + (1-y_{ij})\log(1-\hat{y}_{ij})]
+\end{equation}
+
+Adam optimizer is used with a learning rate of 0.001.
+
+\section{K-Fold Cross-Validation}
+\label{sec:validation}
+
+\subsection{Methodology}
+
+To ensure robust evaluation, we employ stratified 10-fold cross-validation. Stratification maintains the proportion of samples for each class across folds, which is crucial for imbalanced datasets.
+
+For each fold:
+\begin{enumerate}
+    \item Split data: 90\% training, 10\% validation
+    \item Train model on training set
+    \item Evaluate on validation set
+    \item Record metrics
+\end{enumerate}
+
+Final metrics are averaged across all 10 folds with standard deviation reported.
+
+\section{Results}
+\label{sec:results}
+
+% Results tables and figures will be added after experiments
+
+\subsection{Performance Metrics}
+
+We evaluate models using:
+
+\begin{itemize}
+    \item \textbf{Precision}: $\frac{TP}{TP + FP}$
+    \item \textbf{Recall}: $\frac{TP}{TP + FN}$
+    \item \textbf{F1-Score}: $\frac{2 \times \text{Precision} \times \text{Recall}}{\text{Precision} + \text{Recall}}$
+    \item \textbf{Hamming Loss}: Fraction of incorrectly predicted labels
+    \item \textbf{ROC-AUC}: Area under the receiver operating characteristic curve (per label)
+\end{itemize}
+
+\subsection{Model Comparison}
+
+% Comparison table will be inserted here
+
+\subsection{Confusion Matrices}
+
+% Confusion matrices will be inserted here
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+This work demonstrates the application of both classical machine learning and deep learning approaches to toxic comment classification. The comparison reveals trade-offs between model complexity, interpretability, and performance on imbalanced multi-label data.
+
+\section*{Acknowledgment}
+
+We acknowledge the Conversation AI team at Jigsaw and Google for providing the dataset and organizing the Kaggle competition.
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}
