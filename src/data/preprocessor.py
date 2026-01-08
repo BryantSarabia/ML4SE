@@ -57,6 +57,11 @@ class TextPreprocessor:
         if not isinstance(text, str):
             return ""
         
+        try:
+            text = text.encode('utf-8', errors='ignore').decode('utf-8')
+        except (UnicodeDecodeError, AttributeError):
+            return ""
+        
         text = text.lower()
         text = self.expand_contractions(text)
         text = re.sub(r'[^a-zA-Z\s]', '', text)
