@@ -18,6 +18,17 @@ class TextPreprocessor:
             nltk.download('stopwords', quiet=True)
             self.stop_words = set(stopwords.words('english'))
         
+        if self.use_lemmatization:
+            try:
+                import spacy
+                self.nlp = spacy.load('en_core_web_sm')
+            except (ImportError, OSError):
+                print("Warning: spaCy model not found. Run: python -m spacy download en_core_web_sm")
+                self.use_lemmatization = False
+                self.nlp = None
+        else:
+            self.nlp = None
+        
         self.contraction_map = {
             "ain't": "is not", "aren't": "are not", "can't": "cannot",
             "can't've": "cannot have", "could've": "could have",
@@ -67,6 +78,10 @@ class TextPreprocessor:
         text = re.sub(r'[^a-zA-Z\s]', '', text)
         
         tokens = text.split()
+        
+        if self.use_lemmatization and self.nlp is not None:
+            doc = self.nlp(' '.join(tokens))
+            tokens = [token.lemma_ for token in doc]
         
         if self.remove_stopwords:
             tokens = [word for word in tokens if word not in self.stop_words and len(word) > 1]
