@@ -79,9 +79,14 @@ class TextPreprocessor:
         
         tokens = text.split()
         
+        if not tokens:
+            return ""
+        
         if self.use_lemmatization and self.nlp is not None:
-            doc = self.nlp(' '.join(tokens))
-            tokens = [token.lemma_ for token in doc]
+            joined_text = ' '.join(tokens)
+            if joined_text.strip():
+                doc = self.nlp(joined_text)
+                tokens = [token.lemma_ for token in doc if token.lemma_.strip()]
         
         if self.remove_stopwords:
             tokens = [word for word in tokens if word not in self.stop_words and len(word) > 1]
