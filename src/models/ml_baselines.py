@@ -10,12 +10,15 @@ from src.models.base import BaseModel
 class TfidfLogisticRegression(BaseModel):
     """TF-IDF + Logistic Regression baseline model."""
     
-    def __init__(self, max_features=5000, C=1.0):
+    def __init__(self, max_features=5000, C=1.0, class_weight='balanced'):
         super().__init__("TF-IDF + Logistic Regression")
         self.max_features = max_features
         self.C = C
+        self.class_weight = class_weight
         self.vectorizer = TfidfVectorizer(max_features=max_features, ngram_range=(1, 2))
-        self.model = OneVsRestClassifier(LogisticRegression(C=C, max_iter=1000, random_state=42))
+        self.model = OneVsRestClassifier(
+            LogisticRegression(C=C, max_iter=1000, random_state=42, class_weight=class_weight)
+        )
     
     def fit(self, X_train, y_train, X_val=None, y_val=None):
         X_train_tfidf = self.vectorizer.fit_transform(X_train)
