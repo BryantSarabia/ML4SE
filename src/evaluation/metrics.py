@@ -41,12 +41,22 @@ class MetricsCalculator:
         per_label_metrics = {}
         
         for i, label in enumerate(self.label_columns):
-            per_label_metrics[label] = {
-                'precision': precision_score(y_true[:, i], y_pred_binary[:, i], zero_division=0),
-                'recall': recall_score(y_true[:, i], y_pred_binary[:, i], zero_division=0),
-                'f1_score': f1_score(y_true[:, i], y_pred_binary[:, i], zero_division=0),
-                'support': int(y_true[:, i].sum())
-            }
+            support = int(y_true[:, i].sum())
+            
+            if support == 0 or y_pred_binary[:, i].sum() == 0:
+                per_label_metrics[label] = {
+                    'precision': 0.0,
+                    'recall': 0.0,
+                    'f1_score': 0.0,
+                    'support': support
+                }
+            else:
+                per_label_metrics[label] = {
+                    'precision': precision_score(y_true[:, i], y_pred_binary[:, i], zero_division=0),
+                    'recall': recall_score(y_true[:, i], y_pred_binary[:, i], zero_division=0),
+                    'f1_score': f1_score(y_true[:, i], y_pred_binary[:, i], zero_division=0),
+                    'support': support
+                }
             
             try:
                 per_label_metrics[label]['roc_auc'] = roc_auc_score(y_true[:, i], y_pred[:, i])
