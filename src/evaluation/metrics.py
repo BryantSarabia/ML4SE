@@ -3,7 +3,9 @@ from sklearn.metrics import (
     accuracy_score, precision_score, recall_score, f1_score,
     hamming_loss, roc_auc_score, confusion_matrix
 )
-from typing import Dict, List, Tuple
+from sklearn.model_selection import KFold
+from typing import Dict, List, Tuple, Any
+import copy
 
 
 class MetricsCalculator:
@@ -97,3 +99,78 @@ class MetricsCalculator:
                   f"{metrics['f1_score']:<12.4f} {metrics['roc_auc']:<12.4f} {metrics['support']:<10}")
         
         print("="*70 + "\n")
+
+
+class KFoldValidator:
+    """K-Fold cross-validation for multi-label classification."""
+    
+    def __init__(self, n_splits: int = 10, random_state: int = 42):
+        self.n_splits = n_splits
+        self.random_state = random_state
+        self.kfold = KFold(n_splits=n_splits, shuffle=True, random_state=random_state)
+    
+    def cross_validate(self, model, X, y, metrics_calculator: MetricsCalculator) -> Dict[str, Any]:
+        """Perform k-fold cross-validation and return aggregated metrics."""
+        fold_metrics = []
+        fold_predictions = []
+        
+        X_array = np.array(X) if not isinstance(X, np.ndarray) else X
+        y_array = np.array(y) if not isinstance(y, np.ndarray) else y
+        
+        for fold, (train_idx, val_idx) in enumerate(self.kfold.split(X_array), 1):
+            print(f"\nFold {fold}/{self.n_splits}")
+            print("-" * 50)
+            
+            X_train_fold = X_array[train_idx]
+            X_val_fold = X_array[val_idx]
+            y_train_fold = y_array[train_idx]
+            y_val_fold = y_array[val_idx]
+            
+            model_copy = copy.deepcopy(model)
+            model_copy.fit(X_train_fold, y_train_fold)
+            
+            y_pred_fold = model_copy.predict(X_val_fold)
+            
+            metrics = metrics_calculator.calculate_metrics(y_val_fold, y_pred_fold)
+            fold_metrics.append(metrics)
+            
+            print(f"Fold {fold} Metrics:")
+            for metric, value in metrics.items():
+                print(f"  {metric}: {value:.4f}")
+        
+        aggregated_metrics = self._aggregate_metrics(fold_metrics)
+        
+        return {
+            'fold_metrics': fold_metrics,
+            'mean_metrics': aggregated_metrics['mean'],
+            'std_metrics': aggregated_metrics['std']
+        }
+    
+    def _aggregate_metrics(self, fold_metrics: List[Dict[str, float]]) -> Dict[str, Dict[str, float]]:
+        """Aggregate metrics across folds."""
+        metric_names = fold_metrics[0].keys()
+        
+        mean_metrics = {}
+        std_metrics = {}
+        
+        for metric in metric_names:
+            values = [fold[metric] for fold in fold_metrics]
+            mean_metrics[metric] = np.mean(values)
+            std_metrics[metric] = np.std(values)
+        
+        return {'mean': mean_metrics, 'std': std_metrics}
+    
+    def print_cv_summary(self, cv_results: Dict[str, Any]) -> None:
+        """Print cross-validation summary."""
+        print("\n" + "="*60)
+        print(f"K-FOLD CROSS-VALIDATION SUMMARY (k={self.n_splits})")
+        print("="*60)
+        print(f"{'Metric':<20} {'Mean':<15} {'Std':<15}")
+        print("-"*60)
+        
+        for metric in cv_results['mean_metrics'].keys():
+            mean = cv_results['mean_metrics'][metric]
+            std = cv_results['std_metrics'][metric]
+            print(f"{metric:<20} {mean:<15.4f} {std:<15.4f}")
+        
+        print("="*60 + "\n")
