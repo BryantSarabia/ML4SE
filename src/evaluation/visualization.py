@@ -23,7 +23,10 @@ class Visualizer:
         fig, axes = plt.subplots(2, 3, figsize=(15, 10))
         axes = axes.flatten()
         
-        for idx, (label, cm) in enumerate(confusion_matrices.items()):
+        sorted_labels = sorted(confusion_matrices.keys())
+        
+        for idx, label in enumerate(sorted_labels):
+            cm = confusion_matrices[label]
             sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=axes[idx],
                        xticklabels=['Negative', 'Positive'],
                        yticklabels=['Negative', 'Positive'])
