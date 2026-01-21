@@ -126,3 +126,30 @@ class Visualizer:
             plt.savefig(save_path, dpi=300, bbox_inches='tight')
         
         plt.show()
+    
+    def plot_roc_curves(self, y_true, y_pred, save_path: str = None) -> None:
+        """Plot ROC curves for all labels."""
+        fig, axes = plt.subplots(2, 3, figsize=(15, 10))
+        axes = axes.flatten()
+        
+        for idx, label in enumerate(self.label_columns):
+            fpr, tpr, _ = roc_curve(y_true[:, idx], y_pred[:, idx])
+            roc_auc = auc(fpr, tpr)
+            
+            axes[idx].plot(fpr, tpr, color=self.colors[idx], lw=2,
+                          label=f'ROC curve (AUC = {roc_auc:.2f})')
+            axes[idx].plot([0, 1], [0, 1], color='gray', lw=1, linestyle='--', label='Random')
+            axes[idx].set_xlim([0.0, 1.0])
+            axes[idx].set_ylim([0.0, 1.05])
+            axes[idx].set_xlabel('False Positive Rate')
+            axes[idx].set_ylabel('True Positive Rate')
+            axes[idx].set_title(f'{label.capitalize()} - ROC Curve')
+            axes[idx].legend(loc="lower right")
+            axes[idx].grid(alpha=0.3)
+        
+        plt.tight_layout()
+        
+        if save_path:
+            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        
+        plt.show()
