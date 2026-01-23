@@ -39,7 +39,7 @@ class BiLSTMModel(BaseModel):
             metrics=['accuracy']
         )
     
-    def fit(self, X_train, y_train, X_val=None, y_val=None, epochs=5, batch_size=32):
+    def fit(self, X_train, y_train, X_val=None, y_val=None, epochs=5, batch_size=64):
         self.tokenizer.fit_on_texts(X_train)
         
         X_train_seq = self.tokenizer.texts_to_sequences(X_train)
