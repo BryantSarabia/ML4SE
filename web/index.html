@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toxic Comment Classifier</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Toxic Comment Classifier</h1>
+            <p>Multi-label classification of Wikipedia comments</p>
+        </header>
+
+        <main>
+            <section class="input-section">
+                <label for="comment-input">Enter your comment:</label>
+                <textarea 
+                    id="comment-input" 
+                    placeholder="Type a comment to analyze..." 
+                    rows="5"
+                ></textarea>
+                
+                <button id="analyze-btn" onclick="analyzeComment()">Analyze Comment</button>
+                
+                <div class="examples">
+                    <p>Try examples:</p>
+                    <button class="example-btn" onclick="loadExample(0)">Clean</button>
+                    <button class="example-btn" onclick="loadExample(1)">Toxic</button>
+                    <button class="example-btn" onclick="loadExample(2)">Threat</button>
+                    <button class="example-btn" onclick="loadExample(3)">Insult</button>
+                </div>
+            </section>
+
+            <section class="results-section" id="results-section" style="display: none;">
+                <div class="results-header">
+                    <h2>Results</h2>
+                    <div class="risk-indicator" id="risk-indicator">
+                        <span>Risk Level: </span>
+                        <span id="risk-level" class="risk-badge">-</span>
+                    </div>
+                </div>
+
+                <div class="predictions" id="predictions">
+                    <div class="prediction-item">
+                        <span class="label">toxic</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="toxic-bar"></div>
+                        </div>
+                        <span class="percentage" id="toxic-pct">0%</span>
+                    </div>
+
+                    <div class="prediction-item">
+                        <span class="label">severe_toxic</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="severe_toxic-bar"></div>
+                        </div>
+                        <span class="percentage" id="severe_toxic-pct">0%</span>
+                    </div>
+
+                    <div class="prediction-item">
+                        <span class="label">obscene</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="obscene-bar"></div>
+                        </div>
+                        <span class="percentage" id="obscene-pct">0%</span>
+                    </div>
+
+                    <div class="prediction-item">
+                        <span class="label">threat</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="threat-bar"></div>
+                        </div>
+                        <span class="percentage" id="threat-pct">0%</span>
+                    </div>
+
+                    <div class="prediction-item">
+                        <span class="label">insult</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="insult-bar"></div>
+                        </div>
+                        <span class="percentage" id="insult-pct">0%</span>
+                    </div>
+
+                    <div class="prediction-item">
+                        <span class="label">identity_hate</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="identity_hate-bar"></div>
+                        </div>
+                        <span class="percentage" id="identity_hate-pct">0%</span>
+                    </div>
+                </div>
+
+                <div class="highest-risk" id="highest-risk">
+                    Highest risk: <strong id="highest-risk-label">-</strong>
+                </div>
+            </section>
+
+            <div class="error-message" id="error-message" style="display: none;"></div>
+        </main>
+
+        <footer>
+            <p>ML4SE Project - University</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
