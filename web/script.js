@@ -26,10 +26,12 @@ function loadExample(index) {
 }
 
 async function analyzeComment() {
-    const comment = document.getElementById('comment-input').value.trim();
+    const commentInput = document.getElementById('comment-input');
+    const comment = commentInput.value.trim();
     
-    if (!comment) {
-        showError('Please enter a comment to analyze');
+    if (!comment || comment.length < 3) {
+        showError('Please enter a valid comment (at least 3 characters)');
+        commentInput.focus();
         return;
     }
     
