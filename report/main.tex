@@ -22,11 +22,11 @@ Email: bryantmichelle.sarabiaortega@student.univaq.it}
 \maketitle
 
 \begin{abstract}
-This paper presents a deep learning approach to toxic comment classification using a Bidirectional Long Short-Term Memory (BiLSTM) neural network for multi-label classification of Wikipedia comments. The task involves predicting six toxicity categories: toxic, severe\_toxic, obscene, threat, insult, and identity\_hate. We employ 10-fold cross-validation on the complete Jigsaw dataset (159,571 samples) to ensure robust evaluation. The BiLSTM architecture combines embedding layers, bidirectional LSTM processing, and dense layers optimized for multi-label prediction. Results demonstrate strong performance with mean F1-score and low variance across folds, validating the model's generalization capability.
+This paper presents a deep learning approach to toxic comment classification using a Bidirectional Long Short-Term Memory (BiLSTM) neural network for multi-label classification of Wikipedia comments. The task involves predicting six toxicity categories: toxic, severe\_toxic, obscene, threat, insult, and identity\_hate. We employ 10-fold cross-validation on the complete Jigsaw dataset (159,571 samples) to ensure robust evaluation. The implementation follows software engineering best practices, utilizing the Abstract Factory and Strategy design patterns to achieve flexible data persistence supporting both file-based and in-memory storage with minimal code changes. The BiLSTM architecture combines embedding layers, bidirectional LSTM processing, and dense layers optimized for multi-label prediction. Results demonstrate strong performance with mean F1-score of 0.6877 and low variance across folds, validating both the model's generalization capability and the architectural design's effectiveness.
 \end{abstract}
 
 \begin{IEEEkeywords}
-toxic comment classification, multi-label classification, natural language processing, deep learning, LSTM, text classification
+toxic comment classification, multi-label classification, natural language processing, deep learning, LSTM, text classification, design patterns, software architecture
 \end{IEEEkeywords}
 
 \section{Introduction}
@@ -35,7 +35,7 @@ The proliferation of online communication platforms has led to an increase in to
 
 The Conversation AI team, a research initiative founded by Jigsaw and Google, developed the Perspective API to help identify toxic comments. This work builds upon their efforts by implementing and comparing various classification techniques on the Jigsaw Toxic Comment Classification Challenge dataset~\cite{jigsaw2018toxic}.
 
-This paper is organized as follows: Section \ref{sec:dataset} describes the dataset and preprocessing methodology, Section \ref{sec:methods} presents the machine learning techniques employed, Section \ref{sec:validation} explains the cross-validation approach, Section \ref{sec:results} discusses the experimental results, and Section \ref{sec:conclusion} concludes the work.
+This paper is organized as follows: Section \ref{sec:dataset} describes the dataset and preprocessing methodology, Section \ref{sec:design} presents the software design patterns and architecture, Section \ref{sec:methods} presents the machine learning techniques employed, Section \ref{sec:validation} explains the cross-validation approach, Section \ref{sec:results} discusses the experimental results, and Section \ref{sec:conclusion} concludes the work.
 
 \section{Dataset Description}
 \label{sec:dataset}
@@ -79,6 +79,24 @@ Figure \ref{fig:label_dist} shows the class imbalance, while Figure \ref{fig:mul
 
 Figure \ref{fig:label_corr} shows strong correlations between certain label pairs. For instance, \textit{toxic} correlates strongly with \textit{obscene} and \textit{insult}, suggesting these toxicity types often co-occur.
 
+\subsection{Text Length Analysis}
+
+Understanding the distribution of comment lengths provides insights into the dataset characteristics. Figure \ref{fig:comment_length} shows the distribution of comment lengths in characters, revealing that most comments are relatively short, with a right-skewed distribution. Figure \ref{fig:length_analysis} presents a detailed analysis comparing comment lengths across different toxicity categories, demonstrating that toxic comments tend to have similar length distributions to clean comments, indicating that length alone is not a strong predictor of toxicity.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.48\textwidth]{figures/comment_length_distribution.png}
+\caption{Distribution of comment lengths showing right-skewed pattern}
+\label{fig:comment_length}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.48\textwidth]{figures/length_analysis.png}
+\caption{Comment length analysis across toxicity categories}
+\label{fig:length_analysis}
+\end{figure}
+
 \subsection{Preprocessing}
 
 Text preprocessing is critical for NLP tasks. Our pipeline begins with lowercasing all text and expanding contractions such as converting "can't" to "cannot". Non-alphabetic characters are removed, followed by tokenization of the text. We apply lemmatization using spaCy and remove common stopwords to focus on meaningful content.
@@ -89,6 +107,31 @@ Text preprocessing is critical for NLP tasks. Our pipeline begins with lowercasi
 \caption{Most frequent words after preprocessing}
 \label{fig:word_freq}
 \end{figure}
+
+\section{Software Design and Architecture}
+\label{sec:design}
+
+To satisfy the project requirements for flexibility and modularity, the application employs several key design patterns that enable seamless switching between different persistence layers while maintaining business logic integrity.
+
+\subsection{Abstract Factory Pattern}
+
+The data persistence layer implements the Abstract Factory design pattern through the \texttt{DataLoader} abstract base class. This pattern defines a common interface for data loading operations regardless of the underlying storage mechanism. The \texttt{DataLoader} class declares three abstract methods: \texttt{load\_train\_data()} for retrieving training samples and labels, \texttt{load\_test\_data()} for loading test samples, and \texttt{save\_predictions()} for storing model outputs. Two concrete implementations fulfill this interface: \texttt{FileBasedDataLoader} reads data from CSV files in the filesystem, while \texttt{MemoryBasedDataLoader} operates on pandas DataFrames already loaded in memory. A factory function \texttt{get\_data\_loader(mode, **kwargs)} instantiates the appropriate loader based on the specified mode parameter, returning either a file-based or memory-based implementation without exposing implementation details to the caller.
+
+\subsection{Strategy Pattern}
+
+The model architecture follows the Strategy pattern through the \texttt{BaseModel} abstract class, which defines a uniform interface for all classification models. This abstraction declares methods for training (\texttt{fit()}), prediction (\texttt{predict()}), and persistence (\texttt{save\_model()}, \texttt{load\_model()}), along with metadata accessors. The \texttt{BiLSTMModel} class implements this interface, encapsulating the specific deep learning architecture while exposing the same contract as any other model implementation. This design allows the application to treat different model types uniformly, facilitating experimentation with multiple approaches without modifying client code.
+
+\subsection{Separation of Concerns}
+
+The application architecture strictly separates data access, preprocessing, model training, and evaluation into distinct modules. The \texttt{src.data} package handles all data loading and preprocessing operations, while \texttt{src.models} contains model implementations, and \texttt{src.evaluation} manages metrics calculation and visualization. This modular organization ensures that changes to one layer do not cascade to others. For instance, switching from file-based to memory-based data loading requires only changing the factory function parameter from \texttt{mode="file"} to \texttt{mode="memory"}, with no modifications needed to preprocessing, training, or evaluation code.
+
+\subsection{Dependency Injection}
+
+The training pipeline receives data loaders, preprocessors, and models as constructor parameters rather than instantiating them directly. This dependency injection approach decouples component instantiation from usage, enabling easy substitution of implementations. The notebook demonstrates this pattern by creating a \texttt{FileBasedDataLoader} instance and passing it to subsequent operations, allowing straightforward replacement with a \texttt{MemoryBasedDataLoader} for testing or different deployment scenarios.
+
+\subsection{Implementation Benefits}
+
+This architectural design satisfies the project's non-functional requirements by providing true flexibility between persistence mechanisms. The business logic interacts exclusively with abstract interfaces, remaining agnostic to whether data resides in files or memory. Switching persistence layers involves changing a single line of code in the data loader instantiation, with the identical \texttt{DataLoader} interface guaranteeing that all downstream operations function unchanged. The modular structure also facilitates testing, maintenance, and future extensions such as database-backed storage or cloud-based data sources.
 
 \section{Deep Learning Architecture}
 \label{sec:methods}
@@ -109,7 +152,7 @@ where $N$ is the number of samples, $y_{ij}$ is the true label, and $\hat{y}_{ij
 
 \subsection{Training Configuration}
 
-The model is trained using the Adam optimizer with a learning rate of 0.001, processing data in batches of 32 samples. Each fold is trained for 5 epochs on the complete dataset of 561,807 training samples, ensuring comprehensive learning from all available data.
+The model is trained using the Adam optimizer with a learning rate of 0.001, processing data in batches of 32 samples. Each fold is trained for 5 epochs on the complete dataset of 159,571 training samples, ensuring comprehensive learning from all available data.
 
 \section{K-Fold Cross-Validation}
 \label{sec:validation}
@@ -149,7 +192,14 @@ Accuracy & 0.9172 & 0.0030 \\
 \end{tabular}
 \end{table}
 
-The results demonstrate excellent and consistent performance across all folds, with very low standard deviation indicating highly stable model behavior. The high ROC-AUC score of 0.9658 demonstrates that the model excels at ranking toxic comments above non-toxic ones, showing strong discriminative capability. The F1-score of 0.6877 reflects balanced performance between precision and recall, indicating reasonable overall effectiveness. With a precision of 0.7783, the model exhibits high accuracy in its positive predictions, meaning that when it flags a comment as toxic, it is correct approximately 78\% of the time. The recall of 0.6282 shows that the model successfully captures 63\% of actual toxic comments in the dataset. The Hamming loss of 0.0190 indicates very few incorrect label predictions per sample, confirming high accuracy in the multi-label setting. Furthermore, all metrics exhibit standard deviations below 0.025, demonstrating robust generalization across different data splits.
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.48\textwidth]{figures/cv_results.png}
+\caption{Cross-validation performance across all 10 folds}
+\label{fig:cv_results}
+\end{figure}
+
+The results demonstrate excellent and consistent performance across all folds, with very low standard deviation indicating highly stable model behavior. Figure \ref{fig:cv_results} visualizes the performance variation across folds, confirming the consistency observed in the numerical results. The high ROC-AUC score of 0.9658 demonstrates that the model excels at ranking toxic comments above non-toxic ones, showing strong discriminative capability. The F1-score of 0.6877 reflects balanced performance between precision and recall, indicating reasonable overall effectiveness. With a precision of 0.7783, the model exhibits high accuracy in its positive predictions, meaning that when it flags a comment as toxic, it is correct approximately 78\% of the time. The recall of 0.6282 shows that the model successfully captures 63\% of actual toxic comments in the dataset. The Hamming loss of 0.0190 indicates very few incorrect label predictions per sample, confirming high accuracy in the multi-label setting. Furthermore, all metrics exhibit standard deviations below 0.025, demonstrating robust generalization across different data splits.
 
 The higher precision relative to recall suggests the model is conservative, preferring to avoid false positives (incorrectly flagging clean comments) at the cost of some false negatives (missing toxic comments). This trade-off is often desirable in content moderation systems.
 
