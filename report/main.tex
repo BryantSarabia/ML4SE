@@ -61,7 +61,32 @@ The dataset consists of Wikipedia comments labeled by human raters for toxic beh
 
 The training set contains 159,571 comments with binary labels for each category. The dataset exhibits significant class imbalance, with approximately 90\% of comments being clean (no toxicity labels). Among the toxic categories, \textit{threat} is the rarest (0.30\%) while \textit{toxic} is most common (9.58\%).
 
-% Table will be added after analysis
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.45\textwidth]{figures/label_distribution.png}
+\caption{Distribution of toxicity labels showing severe class imbalance}
+\label{fig:label_dist}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.45\textwidth]{figures/multilabel_distribution.png}
+\caption{Distribution of number of labels per comment}
+\label{fig:multilabel_dist}
+\end{figure}
+
+Figure \ref{fig:label_dist} shows the class imbalance, while Figure \ref{fig:multilabel_dist} reveals that most toxic comments have only one label, with few having multiple toxicity types.
+
+\subsection{Data Characteristics}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.48\textwidth]{figures/label_correlation.png}
+\caption{Correlation matrix showing relationships between toxicity labels}
+\label{fig:label_corr}
+\end{figure}
+
+Figure \ref{fig:label_corr} shows strong correlations between certain label pairs. For instance, \textit{toxic} correlates strongly with \textit{obscene} and \textit{insult}, suggesting these toxicity types often co-occur.
 
 \subsection{Preprocessing}
 
@@ -75,6 +100,13 @@ Text preprocessing is critical for NLP tasks. Our pipeline includes:
     \item Lemmatization using spaCy
     \item Removing stopwords
 \end{enumerate}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.48\textwidth]{figures/word_frequency.png}
+\caption{Most frequent words after preprocessing}
+\label{fig:word_freq}
+\end{figure}
 
 \section{Machine Learning Techniques}
 \label{sec:methods}

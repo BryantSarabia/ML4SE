@@ -1,0 +1,35 @@
+# Model Training Results
+
+## Dataset
+- Total samples: 159571
+- Training samples (classical ML): 80000
+- Test samples (classical ML): 10000
+- Training samples (BiLSTM): 20000
+- Test samples (BiLSTM): 2000
+
+## Model Performance
+
+### TF-IDF + Logistic Regression
+- Hamming Loss: 0.0374
+- F1 Score: 0.6505
+- Precision: 0.5393
+- Recall: 0.8377
+
+### TF-IDF + Naive Bayes
+- Hamming Loss: 0.0235
+- F1 Score: 0.5763
+- Precision: 0.8276
+- Recall: 0.4484
+
+### BiLSTM Neural Network
+- Hamming Loss: 0.0208
+- F1 Score: 0.6519
+- Precision: 0.6651
+- Recall: 0.6436
+
+## Comparison Table
+
+              Model  Hamming Loss  F1 Score  Precision   Recall
+Logistic Regression      0.037433  0.650464   0.539277 0.837743
+        Naive Bayes      0.023483  0.576340   0.827619 0.448413
+             BiLSTM      0.020750  0.651937   0.665095 0.643564
