@@ -78,7 +78,8 @@ The dataset consists of Wikipedia comments labeled by human raters:
 
 ## Author
 
-University Project - ML4SE Course
+Bryant Michelle Sarabia Ortega  
+University of L'Aquila - ML4SE Course
 
 ## License
 
