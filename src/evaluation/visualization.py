@@ -19,7 +19,6 @@ class Visualizer:
     
     def plot_confusion_matrices(self, confusion_matrices: Dict[str, np.ndarray], 
                                 save_path: str = None) -> None:
-        """Plot confusion matrices for all labels."""
         fig, axes = plt.subplots(2, 3, figsize=(15, 10))
         axes = axes.flatten()
         
@@ -43,7 +42,6 @@ class Visualizer:
     
     def plot_metrics_comparison(self, model_metrics: Dict[str, Dict[str, float]], 
                                 save_path: str = None) -> None:
-        """Compare metrics across multiple models."""
         metrics_to_plot = ['precision', 'recall', 'f1_score', 'roc_auc']
         
         fig, axes = plt.subplots(2, 2, figsize=(14, 10))
@@ -71,7 +69,6 @@ class Visualizer:
     
     def plot_per_label_metrics(self, per_label_metrics: Dict[str, Dict[str, float]],
                                save_path: str = None) -> None:
-        """Plot metrics for each label."""
         labels = list(per_label_metrics.keys())
         metrics = ['precision', 'recall', 'f1_score']
         
@@ -102,7 +99,6 @@ class Visualizer:
         plt.show()
     
     def plot_training_history(self, history, save_path: str = None) -> None:
-        """Plot training history for deep learning models."""
         fig, axes = plt.subplots(1, 2, figsize=(14, 5))
         
         axes[0].plot(history.history['loss'], label='Training Loss', color='#e74c3c')
@@ -131,7 +127,6 @@ class Visualizer:
         plt.show()
     
     def plot_roc_curves(self, y_true, y_pred, save_path: str = None) -> None:
-        """Plot ROC curves for all labels."""
         fig, axes = plt.subplots(2, 3, figsize=(15, 10))
         axes = axes.flatten()
         

@@ -15,7 +15,6 @@ class ToxicityPredictor:
             self.load_model(model_path)
     
     def load_model(self, model_path: str):
-        """Load a trained model from disk."""
         try:
             with open(model_path, 'rb') as f:
                 data = pickle.load(f)
@@ -26,7 +25,6 @@ class ToxicityPredictor:
             self.model = None
     
     def predict(self, comment: str) -> dict:
-        """Predict toxicity for a single comment."""
         if self.model is None:
             return self._mock_prediction(comment)
         
@@ -55,7 +53,6 @@ class ToxicityPredictor:
         }
     
     def _mock_prediction(self, comment: str) -> dict:
-        """Generate mock predictions for testing when no model is loaded."""
         toxic_words = ['stupid', 'idiot', 'hate', 'kill', 'die', 'fuck', 'shit']
         
         toxicity_score = sum(1 for word in toxic_words if word in comment.lower()) * 0.15
@@ -78,7 +75,6 @@ class ToxicityPredictor:
         }
     
     def _calculate_risk_level(self, predictions: dict) -> str:
-        """Calculate overall risk level based on predictions."""
         max_prob = max(predictions.values())
         
         if max_prob >= 0.7:
@@ -89,5 +85,4 @@ class ToxicityPredictor:
             return 'low'
     
     def _get_highest_risk(self, predictions: dict) -> str:
-        """Get the label with highest probability."""
         return max(predictions.items(), key=lambda x: x[1])[0]

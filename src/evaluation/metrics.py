@@ -18,7 +18,6 @@ class MetricsCalculator:
             self.label_columns = label_columns
     
     def calculate_metrics(self, y_true, y_pred, threshold: float = 0.5) -> Dict[str, float]:
-        """Calculate comprehensive metrics for multi-label classification."""
         y_pred_binary = (y_pred >= threshold).astype(int)
         
         metrics = {
@@ -37,7 +36,6 @@ class MetricsCalculator:
         return metrics
     
     def calculate_per_label_metrics(self, y_true, y_pred, threshold: float = 0.5) -> Dict[str, Dict[str, float]]:
-        """Calculate metrics for each label individually."""
         y_pred_binary = (y_pred >= threshold).astype(int)
         
         per_label_metrics = {}
@@ -68,7 +66,6 @@ class MetricsCalculator:
         return per_label_metrics
     
     def get_confusion_matrices(self, y_true, y_pred, threshold: float = 0.5) -> Dict[str, np.ndarray]:
-        """Get confusion matrix for each label."""
         y_pred_binary = (y_pred >= threshold).astype(int)
         
         confusion_matrices = {}
@@ -78,7 +75,6 @@ class MetricsCalculator:
         return confusion_matrices
     
     def print_metrics_summary(self, metrics: Dict[str, float]) -> None:
-        """Print formatted metrics summary."""
         print("\n" + "="*50)
         print("OVERALL METRICS")
         print("="*50)
@@ -87,7 +83,6 @@ class MetricsCalculator:
         print("="*50 + "\n")
     
     def print_per_label_metrics(self, per_label_metrics: Dict[str, Dict[str, float]]) -> None:
-        """Print formatted per-label metrics."""
         print("\n" + "="*70)
         print("PER-LABEL METRICS")
         print("="*70)
@@ -147,7 +142,6 @@ class KFoldValidator:
         }
     
     def _aggregate_metrics(self, fold_metrics: List[Dict[str, float]]) -> Dict[str, Dict[str, float]]:
-        """Aggregate metrics across folds."""
         metric_names = fold_metrics[0].keys()
         
         mean_metrics = {}
@@ -161,7 +155,6 @@ class KFoldValidator:
         return {'mean': mean_metrics, 'std': std_metrics}
     
     def print_cv_summary(self, cv_results: Dict[str, Any]) -> None:
-        """Print cross-validation summary."""
         print("\n" + "="*60)
         print(f"K-FOLD CROSS-VALIDATION SUMMARY (k={self.n_splits})")
         print("="*60)

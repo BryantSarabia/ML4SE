@@ -1,6 +1,5 @@
 import re
-import string
-from typing import List, Optional
+from typing import List
 import nltk
 from nltk.corpus import stopwords
 
@@ -58,13 +57,11 @@ class TextPreprocessor:
         }
     
     def expand_contractions(self, text: str) -> str:
-        """Expand contractions in text."""
         for contraction, expansion in self.contraction_map.items():
             text = text.replace(contraction, expansion)
         return text
     
     def clean_text(self, text: str) -> str:
-        """Clean and preprocess a single text string."""
         if not isinstance(text, str):
             return ""
         
@@ -94,5 +91,4 @@ class TextPreprocessor:
         return ' '.join(tokens)
     
     def preprocess_batch(self, texts: List[str]) -> List[str]:
-        """Preprocess a batch of texts."""
         return [self.clean_text(text) for text in texts]

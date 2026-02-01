@@ -41,7 +41,6 @@ async def health_check():
 
 @app.post("/predict", response_model=PredictionResponse)
 async def predict(request: PredictionRequest):
-    """Predict toxicity for a given comment."""
     try:
         result = predictor.predict(request.comment)
         return PredictionResponse(**result)
@@ -51,7 +50,6 @@ async def predict(request: PredictionRequest):
 
 @app.get("/examples", response_model=List[ExampleComment])
 async def get_examples():
-    """Get example comments for testing."""
     return [
         ExampleComment(
             text="This is a great article! Very informative and well-written.",

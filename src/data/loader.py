@@ -8,17 +8,14 @@ class DataLoader(ABC):
     
     @abstractmethod
     def load_train_data(self) -> Tuple[pd.DataFrame, pd.DataFrame]:
-        """Load training data and return (X, y) where y contains all label columns."""
         pass
     
     @abstractmethod
     def load_test_data(self) -> pd.DataFrame:
-        """Load test data and return X."""
         pass
     
     @abstractmethod
     def save_predictions(self, predictions: pd.DataFrame, filename: str) -> None:
-        """Save predictions to storage."""
         pass
 
 

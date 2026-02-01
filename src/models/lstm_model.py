@@ -22,7 +22,6 @@ class BiLSTMModel(BaseModel):
         self._build_model()
     
     def _build_model(self):
-        """Build the BiLSTM architecture."""
         self.model = Sequential([
             Embedding(self.max_features + 1, self.embedding_dim, input_length=self.max_len, mask_zero=True),
             Bidirectional(LSTM(self.lstm_units, activation='tanh', return_sequences=False)),

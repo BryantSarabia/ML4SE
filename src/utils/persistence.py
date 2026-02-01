@@ -10,7 +10,6 @@ class ModelPersistence:
     
     @staticmethod
     def save_model_with_metadata(model, filepath: str, metadata: Dict[str, Any] = None):
-        """Save model with metadata (training date, parameters, metrics, etc.)."""
         model.save_model(filepath)
         
         if metadata is None:
@@ -31,7 +30,6 @@ class ModelPersistence:
     
     @staticmethod
     def load_model_with_metadata(model, filepath: str) -> Dict[str, Any]:
-        """Load model and return metadata."""
         model.load_model(filepath)
         
         metadata_path = filepath.replace('.pkl', '_metadata.json').replace('.keras', '_metadata.json')
@@ -48,7 +46,6 @@ class ModelPersistence:
     
     @staticmethod
     def create_model_directory(base_dir: str = "models"):
-        """Create directory structure for saving models."""
         if not os.path.exists(base_dir):
             os.makedirs(base_dir)
         
