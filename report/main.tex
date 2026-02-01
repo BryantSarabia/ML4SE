@@ -22,7 +22,7 @@ Email: bryantmichelle.sarabiaortega@student.univaq.it}
 \maketitle
 
 \begin{abstract}
-This paper presents a deep learning approach to toxic comment classification using a Bidirectional Long Short-Term Memory (BiLSTM) neural network for multi-label classification of Wikipedia comments. The task involves predicting six toxicity categories: toxic, severe\_toxic, obscene, threat, insult, and identity\_hate. We employ 10-fold cross-validation on the complete Jigsaw dataset (561,807 samples) to ensure robust evaluation. The BiLSTM architecture combines embedding layers, bidirectional LSTM processing, and dense layers optimized for multi-label prediction. Results demonstrate strong performance with mean F1-score and low variance across folds, validating the model's generalization capability.
+This paper presents a deep learning approach to toxic comment classification using a Bidirectional Long Short-Term Memory (BiLSTM) neural network for multi-label classification of Wikipedia comments. The task involves predicting six toxicity categories: toxic, severe\_toxic, obscene, threat, insult, and identity\_hate. We employ 10-fold cross-validation on the complete Jigsaw dataset (159,571 samples) to ensure robust evaluation. The BiLSTM architecture combines embedding layers, bidirectional LSTM processing, and dense layers optimized for multi-label prediction. Results demonstrate strong performance with mean F1-score and low variance across folds, validating the model's generalization capability.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -33,7 +33,7 @@ toxic comment classification, multi-label classification, natural language proce
 
 The proliferation of online communication platforms has led to an increase in toxic and harmful content. Identifying and moderating such content is crucial for maintaining healthy online communities. This project addresses the challenge of automatically detecting toxic comments using machine learning approaches.
 
-The Conversation AI team, a research initiative founded by Jigsaw and Google, developed the Perspective API to help identify toxic comments. This work builds upon their efforts by implementing and comparing various classification techniques on the Jigsaw Toxic Comment Classification Challenge dataset.
+The Conversation AI team, a research initiative founded by Jigsaw and Google, developed the Perspective API to help identify toxic comments. This work builds upon their efforts by implementing and comparing various classification techniques on the Jigsaw Toxic Comment Classification Challenge dataset~\cite{jigsaw2018toxic}.
 
 This paper is organized as follows: Section \ref{sec:dataset} describes the dataset and preprocessing methodology, Section \ref{sec:methods} presents the machine learning techniques employed, Section \ref{sec:validation} explains the cross-validation approach, Section \ref{sec:results} discusses the experimental results, and Section \ref{sec:conclusion} concludes the work.
 
@@ -48,18 +48,9 @@ Formally, given an instance $x$ and a set of labels $L = \{l_1, l_2, ..., l_k\}$
 
 \subsection{Dataset Analysis}
 
-The dataset consists of Wikipedia comments labeled by human raters for toxic behavior across six categories:
+The dataset consists of Wikipedia comments labeled by human raters for toxic behavior across six categories. Comments marked as toxic display general negativity or hostility, while severe toxic comments contain highly aggressive or harmful content surpassing typical toxic behavior. Obscene comments feature offensive or vulgar language, and threat comments convey explicit threats or intentions of harm towards individuals or groups. Insult comments contain disrespectful or demeaning language directed at others, whereas identity hate comments display discrimination or prejudice based on identity factors such as race, gender, or religion.
 
-\begin{itemize}
-    \item \textbf{toxic}: Comments displaying negativity or hostility
-    \item \textbf{severe\_toxic}: Highly aggressive or harmful content
-    \item \textbf{obscene}: Offensive or vulgar language
-    \item \textbf{threat}: Explicit threats or intentions of harm
-    \item \textbf{insult}: Disrespectful or demeaning language
-    \item \textbf{identity\_hate}: Discrimination based on identity factors
-\end{itemize}
-
-The training set contains 159,571 comments with binary labels for each category. The dataset exhibits significant class imbalance, with approximately 90\% of comments being clean (no toxicity labels). Among the toxic categories, \textit{threat} is the rarest (0.30\%) while \textit{toxic} is most common (9.58\%).
+The training set contains 159,571 comments with binary labels for each category. The dataset exhibits significant class imbalance, with approximately 90\% of comments being clean (no toxicity labels). Among the toxic categories, threat is the rarest with only 0.30\% representation, while toxic is most common at 9.58\% of all comments.
 
 \begin{figure}[htbp]
 \centering
@@ -90,16 +81,7 @@ Figure \ref{fig:label_corr} shows strong correlations between certain label pair
 
 \subsection{Preprocessing}
 
-Text preprocessing is critical for NLP tasks. Our pipeline includes:
-
-\begin{enumerate}
-    \item Lowercasing all text
-    \item Expanding contractions (e.g., "can't" $\rightarrow$ "cannot")
-    \item Removing non-alphabetic characters
-    \item Tokenization
-    \item Lemmatization using spaCy
-    \item Removing stopwords
-\end{enumerate}
+Text preprocessing is critical for NLP tasks. Our pipeline begins with lowercasing all text and expanding contractions such as converting "can't" to "cannot". Non-alphabetic characters are removed, followed by tokenization of the text. We apply lemmatization using spaCy and remove common stopwords to focus on meaningful content.
 
 \begin{figure}[htbp]
 \centering
@@ -115,15 +97,7 @@ We implement a Bidirectional LSTM (BiLSTM) neural network for multi-label toxic 
 
 \subsection{Model Architecture}
 
-The BiLSTM network consists of the following layers:
-
-\begin{enumerate}
-    \item \textbf{Embedding Layer}: Maps vocabulary indices (3,000 most frequent words) to dense 32-dimensional vectors
-    \item \textbf{Bidirectional LSTM Layer}: Processes sequences (max length 100 tokens) in both forward and backward directions with 32 LSTM units
-    \item \textbf{Dense Layers}: Two fully-connected layers with 64 units each and ReLU activation
-    \item \textbf{Dropout Layers}: 50\% dropout after each dense layer to prevent overfitting
-    \item \textbf{Output Layer}: Six units with sigmoid activation for multi-label prediction
-\end{enumerate}
+The BiLSTM network processes text through multiple specialized layers. The embedding layer maps vocabulary indices representing the 3,000 most frequent words to dense 32-dimensional vectors, creating meaningful numerical representations of words. These embeddings feed into a bidirectional LSTM layer with 32 units that processes sequences of maximum length 100 tokens in both forward and backward directions, capturing contextual information from both sides of each word. The output passes through two fully-connected dense layers, each with 64 units and ReLU activation, followed by 50\% dropout layers after each dense layer to prevent overfitting. Finally, the output layer contains six units with sigmoid activation for independent multi-label prediction.
 
 The model uses binary cross-entropy loss for multi-label classification:
 
@@ -135,13 +109,7 @@ where $N$ is the number of samples, $y_{ij}$ is the true label, and $\hat{y}_{ij
 
 \subsection{Training Configuration}
 
-The model is trained with:
-\begin{itemize}
-    \item \textbf{Optimizer}: Adam with learning rate 0.001
-    \item \textbf{Batch Size}: 32 samples
-    \item \textbf{Epochs}: 5 per fold
-    \item \textbf{Dataset}: Complete 561,807 training samples
-\end{itemize}
+The model is trained using the Adam optimizer with a learning rate of 0.001, processing data in batches of 32 samples. Each fold is trained for 5 epochs on the complete dataset of 561,807 training samples, ensuring comprehensive learning from all available data.
 
 \section{K-Fold Cross-Validation}
 \label{sec:validation}
@@ -150,37 +118,14 @@ The model is trained with:
 
 To ensure robust evaluation and prevent overfitting, we employ stratified 10-fold cross-validation on the BiLSTM model. Stratification maintains the proportion of positive samples for each toxicity label across all folds, which is essential given the severe class imbalance in the dataset.
 
-The cross-validation procedure:
-
-\begin{enumerate}
-    \item Divide the 561,807 samples into 10 stratified folds
-    \item For each fold $k = 1, \ldots, 10$:
-    \begin{enumerate}
-        \item Use fold $k$ as validation set (10\% of data)
-        \item Use remaining 9 folds as training set (90\% of data)
-        \item Train BiLSTM model for 5 epochs
-        \item Evaluate on validation fold
-        \item Record all metrics (F1, Precision, Recall, Hamming Loss, ROC-AUC)
-    \end{enumerate}
-    \item Calculate mean and standard deviation across all folds
-\end{enumerate}
-
-After cross-validation, we train a final model on the complete dataset for deployment.
+The cross-validation procedure begins by dividing the 159,571 samples into 10 stratified folds, ensuring that each fold maintains representative proportions of all toxicity labels. For each fold $k = 1, \ldots, 10$, we designate that fold as the validation set comprising approximately 10\% of the data, while the remaining 9 folds form the training set with 90\% of the data. We then train the BiLSTM model on the training set for 5 epochs and evaluate its performance on the validation fold, recording all relevant metrics including F1-score, precision, recall, Hamming loss, and ROC-AUC. After completing all 10 iterations, we calculate the mean and standard deviation across all folds to assess model stability and generalization capability. Following cross-validation, we train a final model on the complete dataset for deployment purposes.
 
 \section{Results}
 \label{sec:results}
 
 \subsection{Performance Metrics}
 
-We evaluate the BiLSTM model using standard multi-label classification metrics:
-
-\begin{itemize}
-    \item \textbf{Precision}: $\frac{TP}{TP + FP}$ - Proportion of correct positive predictions
-    \item \textbf{Recall}: $\frac{TP}{TP + FN}$ - Proportion of actual positives correctly identified
-    \item \textbf{F1-Score}: $\frac{2 \times \text{Precision} \times \text{Recall}}{\text{Precision} + \text{Recall}}$ - Harmonic mean of precision and recall
-    \item \textbf{Hamming Loss}: Fraction of incorrectly predicted labels (lower is better)
-    \item \textbf{ROC-AUC}: Area under the ROC curve (per label)
-\end{itemize}
+We evaluate the BiLSTM model using standard multi-label classification metrics. Precision, defined as $\frac{TP}{TP + FP}$, measures the proportion of correct positive predictions among all positive predictions made by the model. Recall, computed as $\frac{TP}{TP + FN}$, quantifies the proportion of actual positive instances that were correctly identified by the classifier. The F1-score represents the harmonic mean of precision and recall, calculated as $\frac{2 \times \text{Precision} \times \text{Recall}}{\text{Precision} + \text{Recall}}$, providing a single balanced metric. Hamming loss measures the fraction of incorrectly predicted labels across all samples, where lower values indicate better performance. Finally, ROC-AUC represents the area under the receiver operating characteristic curve computed per label, assessing the model's ability to discriminate between positive and negative instances.
 
 \subsection{Cross-Validation Results}
 
@@ -204,31 +149,18 @@ Accuracy & 0.9172 & 0.0030 \\
 \end{tabular}
 \end{table}
 
-The results demonstrate excellent and consistent performance across all folds, with very low standard deviation indicating highly stable model behavior:
-
-\begin{itemize}
-    \item \textbf{High ROC-AUC (0.9658)}: The model excels at ranking toxic comments above non-toxic ones
-    \item \textbf{Good F1-Score (0.6877)}: Balanced performance between precision and recall
-    \item \textbf{High Precision (0.7783)}: When the model flags a comment as toxic, it's correct 78\% of the time
-    \item \textbf{Moderate Recall (0.6282)}: The model catches 63\% of actual toxic comments
-    \item \textbf{Low Hamming Loss (0.0190)}: Very few incorrect label predictions per sample
-    \item \textbf{Low Standard Deviation}: All metrics show $\sigma < 0.025$, indicating robust generalization
-\end{itemize}
+The results demonstrate excellent and consistent performance across all folds, with very low standard deviation indicating highly stable model behavior. The high ROC-AUC score of 0.9658 demonstrates that the model excels at ranking toxic comments above non-toxic ones, showing strong discriminative capability. The F1-score of 0.6877 reflects balanced performance between precision and recall, indicating reasonable overall effectiveness. With a precision of 0.7783, the model exhibits high accuracy in its positive predictions, meaning that when it flags a comment as toxic, it is correct approximately 78\% of the time. The recall of 0.6282 shows that the model successfully captures 63\% of actual toxic comments in the dataset. The Hamming loss of 0.0190 indicates very few incorrect label predictions per sample, confirming high accuracy in the multi-label setting. Furthermore, all metrics exhibit standard deviations below 0.025, demonstrating robust generalization across different data splits.
 
 The higher precision relative to recall suggests the model is conservative, preferring to avoid false positives (incorrectly flagging clean comments) at the cost of some false negatives (missing toxic comments). This trade-off is often desirable in content moderation systems.
 
 \section{Conclusion}
 \label{sec:conclusion}
 
-This work presents a Bidirectional LSTM approach for multi-label toxic comment classification on the Jigsaw dataset. Using 10-fold cross-validation on the complete 561,807-sample dataset, we demonstrate the effectiveness of deep learning for capturing contextual patterns in text toxicity detection.
+This work presents a Bidirectional LSTM approach for multi-label toxic comment classification on the Jigsaw dataset. Using 10-fold cross-validation on the complete 159,571-sample dataset, we demonstrate the effectiveness of deep learning for capturing contextual patterns in text toxicity detection.
 
 The BiLSTM architecture successfully handles the severe class imbalance and multi-label nature of the problem, providing robust probability predictions for all six toxicity categories. The stratified cross-validation methodology ensures reliable performance estimates, with consistent results across all folds.
 
 Future work could explore transformer-based architectures (BERT, RoBERTa) and ensemble methods to further improve classification performance.
-
-\section*{Acknowledgment}
-
-We acknowledge the Conversation AI team at Jigsaw and Google for providing the dataset and organizing the Kaggle competition.
 
 \bibliographystyle{IEEEtran}
 \bibliography{references}
