@@ -3,7 +3,8 @@ import pickle
 import json
 from pathlib import Path
 import tensorflow as tf
-from tensorflow.keras.models import load_model
+from tensorflow.keras.models import Sequential, load_model
+from tensorflow.keras.layers import Embedding, Bidirectional, LSTM, Dense, Dropout
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 
@@ -52,26 +53,51 @@ class ToxicityPredictor:
             else:
                 base_path = model_path
             
-            h5_path = str(base_path) + ".h5"
+            weights_path = str(base_path) + "_weights.h5"
             tokenizer_path = str(base_path) + "_tokenizer.pkl"
             config_path = str(base_path) + "_config.json"
             
-            print(f"Loading Keras model from: {h5_path}")
-            self.model = load_model(h5_path)
-            
-            print(f"Loading tokenizer from: {tokenizer_path}")
-            with open(tokenizer_path, 'rb') as f:
-                self.tokenizer = pickle.load(f)
-            
+            # Load config first to get architecture parameters
             print(f"Loading config from: {config_path}")
             with open(config_path, 'r') as f:
                 self.config = json.load(f)
                 self.max_len = self.config['max_len']
             
+            # Reconstruct model architecture from config
+            print("Reconstructing model architecture...")
+            max_features = self.config.get('max_features', 3000)
+            max_len = self.config.get('max_len', 100)
+            embedding_dim = self.config.get('embedding_dim', 32)
+            lstm_units = self.config.get('lstm_units', 32)
+            
+            self.model = Sequential([
+                Embedding(max_features + 1, embedding_dim, input_length=max_len, mask_zero=True),
+                Bidirectional(LSTM(lstm_units, activation='tanh', return_sequences=False)),
+                Dense(64, activation='relu'),
+                Dropout(0.3),
+                Dense(64, activation='relu'),
+                Dropout(0.3),
+                Dense(6, activation='sigmoid')
+            ])
+            
+            self.model.compile(
+                loss='binary_crossentropy',
+                optimizer='adam',
+                metrics=['accuracy']
+            )
+            
+            # Load weights into the reconstructed model
+            print(f"Loading model weights from: {weights_path}")
+            self.model.load_weights(weights_path)
+            
+            print(f"Loading tokenizer from: {tokenizer_path}")
+            with open(tokenizer_path, 'rb') as f:
+                self.tokenizer = pickle.load(f)
+            
             print("Model loaded successfully!")
             print(f"  Model type: {self.config.get('model_name', 'BiLSTM')}")
             print(f"  Max sequence length: {self.max_len}")
-            print(f"  Vocabulary size: {self.config.get('max_features', 'unknown')}")
+            print(f"  Vocabulary size: {max_features}")
             
         except FileNotFoundError as e:
             print(f"Error: Model files not found - {e}")
