@@ -1,3 +1,5 @@
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
 from typing import List
 
 from fastapi import FastAPI, HTTPException
@@ -21,6 +23,9 @@ app.add_middleware(
 
 predictor = ToxicityPredictor(model_dir='../models')
 
+# Thread pool for running blocking ML predictions
+executor = ThreadPoolExecutor(max_workers=4)
+
 
 @app.get("/")
 async def root():
@@ -43,7 +48,9 @@ async def health_check():
 @app.post("/predict", response_model=PredictionResponse)
 async def predict(request: PredictionRequest):
     try:
-        result = predictor.predict(request.comment)
+        # Run the blocking prediction in a thread pool to avoid blocking the event loop
+        loop = asyncio.get_event_loop()
+        result = await loop.run_in_executor(executor, predictor.predict, request.comment)
         return PredictionResponse(**result)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
@@ -61,7 +68,7 @@ async def get_examples():
             category="toxic"
         ),
         ExampleComment(
-            text="I will find you and make you pay for this!",
+            text="I Swear I Shall Fucking Kill That Flea-bitten Cur!",
             category="threat"
         ),
         ExampleComment(

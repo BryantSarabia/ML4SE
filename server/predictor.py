@@ -57,42 +57,19 @@ class ToxicityPredictor:
             else:
                 base_path = model_path
             
-            weights_path = str(base_path) + "_weights.h5"
+            model_file = str(base_path) + ".h5"
             tokenizer_path = str(base_path) + "_tokenizer.pkl"
             config_path = str(base_path) + "_config.json"
             
-            # Load config first to get architecture parameters
+            # Load config first to get max_len parameter
             print(f"Loading config from: {config_path}")
             with open(config_path, 'r') as f:
                 self.config = json.load(f)
                 self.max_len = self.config['max_len']
             
-            # Reconstruct model architecture from config
-            print("Reconstructing model architecture...")
-            max_features = self.config.get('max_features', 3000)
-            max_len = self.config.get('max_len', 100)
-            embedding_dim = self.config.get('embedding_dim', 32)
-            lstm_units = self.config.get('lstm_units', 32)
-            
-            self.model = Sequential([
-                Embedding(max_features + 1, embedding_dim, input_length=max_len, mask_zero=True),
-                Bidirectional(LSTM(lstm_units, activation='tanh', return_sequences=False)),
-                Dense(64, activation='relu'),
-                Dropout(0.3),
-                Dense(64, activation='relu'),
-                Dropout(0.3),
-                Dense(6, activation='sigmoid')
-            ])
-            
-            self.model.compile(
-                loss='binary_crossentropy',
-                optimizer='adam',
-                metrics=['accuracy']
-            )
-            
-            # Load weights into the reconstructed model
-            print(f"Loading model weights from: {weights_path}")
-            self.model.load_weights(weights_path)
+            # Load the full model directly (includes architecture + weights)
+            print(f"Loading model from: {model_file}")
+            self.model = load_model(model_file)
             
             print(f"Loading tokenizer from: {tokenizer_path}")
             with open(tokenizer_path, 'rb') as f:
@@ -101,7 +78,7 @@ class ToxicityPredictor:
             print("Model loaded successfully!")
             print(f"  Model type: {self.config.get('model_name', 'BiLSTM')}")
             print(f"  Max sequence length: {self.max_len}")
-            print(f"  Vocabulary size: {max_features}")
+            print(f"  Vocabulary size: {self.config.get('max_features', 'unknown')}")
             
         except FileNotFoundError as e:
             print(f"Error: Model files not found - {e}")
