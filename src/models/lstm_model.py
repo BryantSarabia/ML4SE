@@ -1,5 +1,6 @@
 import numpy as np
 import pickle
+import json
 from tensorflow import keras
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Embedding, Bidirectional, LSTM, Dense, Dropout
@@ -70,6 +71,7 @@ class BiLSTMModel(BaseModel):
         return self.model.predict(X_pad)
     
     def save_model(self, filepath: str):
+        """Save model, tokenizer, and configuration for server deployment."""
         if filepath.endswith('.keras'):
             self.model.save(filepath)
         else:
@@ -78,6 +80,21 @@ class BiLSTMModel(BaseModel):
         tokenizer_path = filepath.replace('.keras', '_tokenizer.pkl')
         with open(tokenizer_path, 'wb') as f:
             pickle.dump(self.tokenizer, f)
+        
+        config = {
+            'max_features': self.max_features,
+            'max_len': self.max_len,
+            'embedding_dim': self.embedding_dim,
+            'lstm_units': self.lstm_units,
+            'model_name': self.get_model_name()
+        }
+        config_path = filepath.replace('.keras', '_config.json')
+        with open(config_path, 'w') as f:
+            json.dump(config, f, indent=2)
+        
+        print(f"Model saved to: {filepath}")
+        print(f"Tokenizer saved to: {tokenizer_path}")
+        print(f"Config saved to: {config_path}")
     
     def load_model(self, filepath: str):
         if not filepath.endswith('.keras'):

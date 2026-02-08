@@ -1,0 +1,7 @@
+{
+  "max_features": 3000,
+  "max_len": 100,
+  "embedding_dim": 32,
+  "lstm_units": 32,
+  "model_name": "BiLSTM"
+}

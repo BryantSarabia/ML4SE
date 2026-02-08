@@ -1,58 +1,111 @@
 import numpy as np
 import pickle
+import json
 from pathlib import Path
+import tensorflow as tf
+from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 
 class ToxicityPredictor:
-    """Model predictor for toxic comment classification."""
+    """Model predictor for toxic comment classification with BiLSTM."""
     
-    def __init__(self, model_path: str = None):
+    def __init__(self, model_dir: str = None):
+        """
+        Initialize predictor.
+        
+        Args:
+            model_dir: Directory containing model files (default: ../models)
+        """
         self.model = None
-        self.model_path = model_path
+        self.tokenizer = None
+        self.config = None
+        self.max_len = None
         self.label_columns = ['toxic', 'severe_toxic', 'obscene', 'threat', 'insult', 'identity_hate']
         
-        if model_path:
-            self.load_model(model_path)
+        if model_dir:
+            self.load_model(model_dir)
     
-    def load_model(self, model_path: str):
+    def load_model(self, model_dir: str):
+        """
+        Load Keras model, tokenizer, and configuration.
+        
+        Args:
+            model_dir: Path to model directory or base filename
+        """
         try:
-            with open(model_path, 'rb') as f:
-                data = pickle.load(f)
-                self.model = data
-            print(f"Model loaded from {model_path}")
+            if Path(model_dir).is_dir():
+                base_path = Path(model_dir) / "bilstm_toxic_classifier"
+            else:
+                base_path = Path(model_dir).parent / Path(model_dir).stem
+            
+            keras_path = str(base_path) + ".keras"
+            tokenizer_path = str(base_path) + "_tokenizer.pkl"
+            config_path = str(base_path) + "_config.json"
+            
+            print(f"Loading Keras model from: {keras_path}")
+            self.model = load_model(keras_path)
+            
+            print(f"Loading tokenizer from: {tokenizer_path}")
+            with open(tokenizer_path, 'rb') as f:
+                self.tokenizer = pickle.load(f)
+            
+            print(f"Loading config from: {config_path}")
+            with open(config_path, 'r') as f:
+                self.config = json.load(f)
+                self.max_len = self.config['max_len']
+            
+            print("Model loaded successfully!")
+            print(f"  Model type: {self.config.get('model_name', 'BiLSTM')}")
+            print(f"  Max sequence length: {self.max_len}")
+            print(f"  Vocabulary size: {self.config.get('max_features', 'unknown')}")
+            
+        except FileNotFoundError as e:
+            print(f"Error: Model files not found - {e}")
+            print("  Falling back to mock predictions")
+            self.model = None
         except Exception as e:
             print(f"Error loading model: {e}")
+            print("  Falling back to mock predictions")
             self.model = None
     
     def predict(self, comment: str) -> dict:
-        if self.model is None:
+        """
+        Predict toxicity for a comment.
+        
+        Args:
+            comment: Text comment to analyze
+            
+        Returns:
+            dict with predictions, risk_level, and highest_risk
+        """
+        if self.model is None or self.tokenizer is None:
             return self._mock_prediction(comment)
         
         try:
-            if hasattr(self.model, 'predict'):
-                predictions = self.model.predict([comment])[0]
-            else:
-                predictions = self._mock_prediction(comment)['predictions']
-                return {
-                    'comment': comment,
-                    'predictions': predictions,
-                    'risk_level': self._calculate_risk_level(predictions),
-                    'highest_risk': self._get_highest_risk(predictions)
-                }
+            sequence = self.tokenizer.texts_to_sequences([comment])
+            padded = pad_sequences(sequence, maxlen=self.max_len)
+            
+            predictions = self.model.predict(padded, verbose=0)[0]
+            
+            predictions_dict = {
+                label: float(pred) 
+                for label, pred in zip(self.label_columns, predictions)
+            }
+            
+            return {
+                'comment': comment,
+                'predictions': predictions_dict,
+                'risk_level': self._calculate_risk_level(predictions_dict),
+                'highest_risk': self._get_highest_risk(predictions_dict)
+            }
+            
         except Exception as e:
             print(f"Prediction error: {e}")
             return self._mock_prediction(comment)
-        
-        predictions_dict = {label: float(pred) for label, pred in zip(self.label_columns, predictions)}
-        
-        return {
-            'comment': comment,
-            'predictions': predictions_dict,
-            'risk_level': self._calculate_risk_level(predictions_dict),
-            'highest_risk': self._get_highest_risk(predictions_dict)
-        }
     
     def _mock_prediction(self, comment: str) -> dict:
+        """Fallback mock prediction based on keyword matching."""
         toxic_words = ['stupid', 'idiot', 'hate', 'kill', 'die', 'fuck', 'shit']
         
         toxicity_score = sum(1 for word in toxic_words if word in comment.lower()) * 0.15
@@ -71,10 +124,12 @@ class ToxicityPredictor:
             'comment': comment,
             'predictions': predictions,
             'risk_level': self._calculate_risk_level(predictions),
-            'highest_risk': self._get_highest_risk(predictions)
+            'highest_risk': self._get_highest_risk(predictions),
+            'note': 'Using mock predictions - model not loaded'
         }
     
     def _calculate_risk_level(self, predictions: dict) -> str:
+        """Calculate overall risk level from predictions."""
         max_prob = max(predictions.values())
         
         if max_prob >= 0.7:
@@ -85,4 +140,5 @@ class ToxicityPredictor:
             return 'low'
     
     def _get_highest_risk(self, predictions: dict) -> str:
+        """Get the category with highest toxicity probability."""
         return max(predictions.items(), key=lambda x: x[1])[0]
