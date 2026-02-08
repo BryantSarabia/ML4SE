@@ -23,8 +23,14 @@ class ToxicityPredictor:
         self.max_len = None
         self.label_columns = ['toxic', 'severe_toxic', 'obscene', 'threat', 'insult', 'identity_hate']
         
-        if model_dir:
+        if model_dir is None:
+            model_dir = '../models'
+        
+        try:
             self.load_model(model_dir)
+        except Exception as e:
+            print(f"Warning: Could not load model from {model_dir}: {e}")
+            print("Server will use mock predictions")
     
     def load_model(self, model_dir: str):
         """
@@ -34,17 +40,24 @@ class ToxicityPredictor:
             model_dir: Path to model directory or base filename
         """
         try:
-            if Path(model_dir).is_dir():
-                base_path = Path(model_dir) / "bilstm_toxic_classifier"
-            else:
-                base_path = Path(model_dir).parent / Path(model_dir).stem
+            model_path = Path(model_dir)
             
-            keras_path = str(base_path) + ".keras"
+            # If it's a directory, append the default model name
+            if model_path.is_dir():
+                base_path = model_path / "bilstm_toxic_classifier"
+            # If it's a file path (with extension), remove extension
+            elif model_path.suffix in ['.h5', '.keras']:
+                base_path = model_path.with_suffix('')
+            # If it's a base path without extension, use as-is
+            else:
+                base_path = model_path
+            
+            h5_path = str(base_path) + ".h5"
             tokenizer_path = str(base_path) + "_tokenizer.pkl"
             config_path = str(base_path) + "_config.json"
             
-            print(f"Loading Keras model from: {keras_path}")
-            self.model = load_model(keras_path)
+            print(f"Loading Keras model from: {h5_path}")
+            self.model = load_model(h5_path)
             
             print(f"Loading tokenizer from: {tokenizer_path}")
             with open(tokenizer_path, 'rb') as f:

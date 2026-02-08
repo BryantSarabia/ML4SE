@@ -1,8 +1,11 @@
+from typing import List
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from server.schemas import PredictionRequest, PredictionResponse, ExampleComment
+
 from server.predictor import ToxicityPredictor
-from typing import List
+from server.schemas import (ExampleComment, PredictionRequest,
+                            PredictionResponse)
 
 app = FastAPI(
     title="Toxic Comment Classifier API",
@@ -18,7 +21,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-predictor = ToxicityPredictor()
+predictor = ToxicityPredictor(model_dir='../models')
 
 
 @app.get("/")

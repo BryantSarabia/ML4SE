@@ -73,11 +73,15 @@ class BiLSTMModel(BaseModel):
     def save_model(self, filepath: str):
         """Save model, tokenizer, and configuration for server deployment."""
         if filepath.endswith('.keras'):
-            self.model.save(filepath)
+            model_path = filepath.replace('.keras', '.h5')
+        elif filepath.endswith('.h5'):
+            model_path = filepath
         else:
-            self.model.save(filepath + '.keras')
+            model_path = filepath + '.h5'
         
-        tokenizer_path = filepath.replace('.keras', '_tokenizer.pkl')
+        self.model.save(model_path)
+        
+        tokenizer_path = model_path.replace('.h5', '_tokenizer.pkl')
         with open(tokenizer_path, 'wb') as f:
             pickle.dump(self.tokenizer, f)
         
@@ -88,21 +92,23 @@ class BiLSTMModel(BaseModel):
             'lstm_units': self.lstm_units,
             'model_name': self.get_model_name()
         }
-        config_path = filepath.replace('.keras', '_config.json')
+        config_path = model_path.replace('.h5', '_config.json')
         with open(config_path, 'w') as f:
             json.dump(config, f, indent=2)
         
-        print(f"Model saved to: {filepath}")
+        print(f"Model saved to: {model_path}")
         print(f"Tokenizer saved to: {tokenizer_path}")
         print(f"Config saved to: {config_path}")
     
     def load_model(self, filepath: str):
-        if not filepath.endswith('.keras'):
-            filepath = filepath + '.keras'
+        if filepath.endswith('.keras'):
+            filepath = filepath.replace('.keras', '.h5')
+        elif not filepath.endswith('.h5'):
+            filepath = filepath + '.h5'
         
         self.model = keras.models.load_model(filepath)
         
-        tokenizer_path = filepath.replace('.keras', '_tokenizer.pkl')
+        tokenizer_path = filepath.replace('.h5', '_tokenizer.pkl')
         with open(tokenizer_path, 'rb') as f:
             self.tokenizer = pickle.load(f)
         

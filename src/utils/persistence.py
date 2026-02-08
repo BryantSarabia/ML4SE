@@ -21,7 +21,7 @@ class ModelPersistence:
             'is_trained': model.is_model_trained()
         })
         
-        metadata_path = filepath.replace('.pkl', '_metadata.json').replace('.keras', '_metadata.json')
+        metadata_path = filepath.replace('.pkl', '_metadata.json').replace('.keras', '_metadata.json').replace('.h5', '_metadata.json')
         with open(metadata_path, 'w') as f:
             json.dump(metadata, f, indent=2)
         
@@ -32,7 +32,7 @@ class ModelPersistence:
     def load_model_with_metadata(model, filepath: str) -> Dict[str, Any]:
         model.load_model(filepath)
         
-        metadata_path = filepath.replace('.pkl', '_metadata.json').replace('.keras', '_metadata.json')
+        metadata_path = filepath.replace('.pkl', '_metadata.json').replace('.keras', '_metadata.json').replace('.h5', '_metadata.json')
         
         if os.path.exists(metadata_path):
             with open(metadata_path, 'r') as f:
