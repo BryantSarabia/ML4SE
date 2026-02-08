@@ -43,11 +43,15 @@ class ToxicityPredictor:
         try:
             model_path = Path(model_dir)
             
+            # Resolve to absolute path to avoid issues
+            if not model_path.is_absolute():
+                model_path = model_path.resolve()
+            
             # If it's a directory, append the default model name
             if model_path.is_dir():
                 base_path = model_path / "bilstm_toxic_classifier"
             # If it's a file path (with extension), remove extension
-            elif model_path.suffix in ['.h5', '.keras']:
+            elif model_path.suffix in ['.h5', '.keras', '.pkl']:
                 base_path = model_path.with_suffix('')
             # If it's a base path without extension, use as-is
             else:

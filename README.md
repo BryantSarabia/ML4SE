@@ -100,7 +100,8 @@ The notebook performs:
 Start the FastAPI server:
 
 ```bash
-uvicorn server.main:app --reload
+cd server
+uvicorn main:app --reload
 ```
 
 Access the API:

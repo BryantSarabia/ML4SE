@@ -2,10 +2,8 @@ from typing import List
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-
 from predictor import ToxicityPredictor
-from schemas import (ExampleComment, PredictionRequest,
-                     PredictionResponse)
+from schemas import ExampleComment, PredictionRequest, PredictionResponse
 
 app = FastAPI(
     title="Toxic Comment Classifier API",
