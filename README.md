@@ -139,7 +139,7 @@ The model demonstrates excellent consistency across folds with very low standard
 
 ## Technical Stack
 
-- **Deep Learning**: TensorFlow 2.13.1, Keras
+- **Deep Learning**: TensorFlow 2.16.1, Keras
 - **NLP**: spaCy, NLTK
 - **Data Processing**: pandas, NumPy, scikit-learn
 - **Visualization**: matplotlib, seaborn
